@@ -125,7 +125,7 @@ fn generate_getter(field: &Field, offset: &TokenStream, name: &Ident) -> TokenSt
             // #[inline]
             #(#attrs)*
             #[allow(clippy::type_complexity, unused_parens)]
-            #vis #const_ fn #name(&self, index: usize) -> #elem_ty {
+            #vis #const_ fn #name(&self, index: usize) -> <#elem_ty as ::bilge::Parse>::Out {
                 ::core::assert!(index < #len_expr);
                 #getter_value
             }
@@ -138,7 +138,7 @@ fn generate_getter(field: &Field, offset: &TokenStream, name: &Ident) -> TokenSt
         // #[inline]
         #(#attrs)*
         #[allow(clippy::type_complexity, unused_parens)]
-        #vis #const_ fn #name(&self) -> #ty {
+        #vis #const_ fn #name(&self) -> <#ty as ::bilge::Parse>::Out {
             #getter_value
         }
 

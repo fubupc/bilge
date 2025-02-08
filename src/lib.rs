@@ -14,7 +14,7 @@ pub mod prelude {
     #[rustfmt::skip]
     #[doc(no_inline)]
     pub use super::{
-        bitsize, Bitsized,
+        bitsize, Bitsized, Parse,
         FromBits, TryFromBits, DebugBits, BinaryBits, DefaultBits,
         // we control the version, so this should not be a problem
         arbitrary_int::*,
@@ -90,3 +90,48 @@ impl Bitsized for bool {
     const BITS: usize = 1;
     const MAX: Self::ArbitraryInt = <arbitrary_int::u1 as arbitrary_int::Number>::MAX;
 }
+
+/// Parse trait is mainly used to distinguish enum based on exhaustiveness.
+/// For exhaustive enum or struct, `Out` type should be Self. For non-exhaustive enum, it should be
+/// `Result<Self, Self::ArbitraryInt>`.
+pub trait Parse: Bitsized {
+    type Out;
+
+    fn parse(raw: Self::ArbitraryInt) -> Self::Out;
+}
+
+/// If a field is of an arbitrary int type, the its getter's return type should be that exact same type.
+impl<T, const BITS: usize> Parse for arbitrary_int::UInt<T, BITS>
+where
+    arbitrary_int::UInt<T, BITS>: arbitrary_int::Number,
+{
+    type Out = Self;
+
+    fn parse(raw: Self::ArbitraryInt) -> Self::Out {
+        raw
+    }
+}
+
+/// The same applies to bool as above.
+impl Parse for bool {
+    type Out = Self;
+
+    fn parse(raw: Self::ArbitraryInt) -> Self::Out {
+        raw.value() == 1
+    }
+}
+
+macro_rules! parse_impl {
+    ($($name:ident),+) => {
+        $(
+            impl Parse for $name {
+                type Out = Self;
+            
+                fn parse(raw: Self::ArbitraryInt) -> Self::Out {
+                    raw
+                }
+            }
+        )+
+    };
+}
+parse_impl!(u8, u16, u32, u64, u128);

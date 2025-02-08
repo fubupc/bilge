@@ -73,6 +73,17 @@ fn codegen_enum(arb_int: TokenStream, enum_type: &Ident, match_arms: (Vec<TokenS
 
         // this other direction is needed for get/set/new
         #from_enum_impl
+
+        impl ::bilge::Parse for #enum_type {
+            type Out = Result<Self, Self::ArbitraryInt>;
+
+            fn parse(raw: Self::ArbitraryInt) -> Self::Out {
+                match Self::try_from(raw) {
+                    Ok(v) => Ok(v),
+                    Err(_) => Err(raw),
+                }
+            }
+        }
     }
 }
 
@@ -129,6 +140,15 @@ fn codegen_struct(arb_int: TokenStream, struct_type: &Ident, fields: &Fields) ->
         impl #const_ ::core::convert::From<#struct_type> for #arb_int {
             fn from(struct_value: #struct_type) -> Self {
                 struct_value.value
+            }
+        }
+
+        // For struct, assumes it can always be parsed.
+        impl ::bilge::Parse for #struct_type {
+            type Out = Self;
+
+            fn parse(raw: Self::ArbitraryInt) -> Self::Out {
+                Self { value: raw }
             }
         }
     }

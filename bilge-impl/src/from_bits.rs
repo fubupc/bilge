@@ -116,6 +116,14 @@ fn generate_enum(
             }
         }
         #from_enum_impl
+
+        impl ::bilge::Parse for #enum_type {
+            type Out = Self;
+
+            fn parse(raw: Self::ArbitraryInt) -> Self::Out {
+                Self::from(raw)
+            }
+        }
     }
 }
 
@@ -162,6 +170,13 @@ fn generate_struct(arb_int: TokenStream, struct_type: &Ident, fields: &Fields) -
         impl #const_ ::core::convert::From<#struct_type> for #arb_int {
             fn from(value: #struct_type) -> Self {
                 value.value
+            }
+        }
+        impl ::bilge::Parse for #struct_type {
+            type Out = Self;
+
+            fn parse(raw: Self::ArbitraryInt) -> Self::Out {
+                Self::from(raw)
             }
         }
     }
